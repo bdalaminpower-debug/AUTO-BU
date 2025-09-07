@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BYTROX CRASH LOGIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --button-text-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 340px;
+            text-align: center;
+            color: white;
+            z-index: 2; /* Keep login box on top */
+            box-sizing: border-box;
+        }
+
+        .login-box h2 {
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 12px 0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            color: var(--button-text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: transform 0.2s, background-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            background: #aaa;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+        }
+
+        button.loading .spinner {
+            display: block;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Toast Notification Styles */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #d9534f; /* Red for error */
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Responsive "Phone Mode" */
+        @media (max-width: 600px) {
+            .login-box {
+                width: 90%;
+                padding: 30px;
+            }
+
+            .login-box h2 {
+                font-size: 1.5rem;
+            }
+
+            input, button {
+                padding: 14px;
+                font-size: 15px;
+            }
+            
+            #toast-container {
+                width: calc(100% - 40px);
+                left: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div id="toast-container"></div>
+
+    <div class="login-box">
+        <h2>BYTROX SCRIPT Login</h2>
+        <input type="text" id="accessKey" placeholder="Enter Access Key">
+        <button id="loginButton" onclick="login()">
+            <span class="button-text">Activate</span>
+            <div class="spinner"></div>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script>
+    // --- On Page Load: Open Telegram Link ---
+    (function() {
+        window.open('https://t.me/appleking077', '_blank');
+    })();
+
+    // 🔹 YANGI Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1_XCbC777hKwxlilhMeq5Hpty1dvDT1I",
+        authDomain: "giper-8fd92.firebaseapp.com",
+        databaseURL: "https://giper-8fd92-default-rtdb.firebaseio.com",
+        projectId: "giper-8fd92",
+        storageBucket: "giper-8fd92.firebasestorage.app",
+        messagingSenderId: "485740337398",
+        appId: "1:485740337398:android:ab901fd4f28219ea5834d7"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const keysRef = database.ref('MX');
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const keysRef = database.ref('MX');
+
+        // DOM Elements
+        const loginButton = document.getElementById('loginButton');
+        const buttonText = loginButton.querySelector('.button-text');
+        const accessKeyInput = document.getElementById('accessKey');
+
+        // --- Toast Notification Function ---
+        function showToast(message) {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            // Trigger the animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Hide and remove the toast after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 4000);
+        }
+
+        // Generate device ID
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('deviceId');
+            if (!deviceId) {
+                deviceId = 'd-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('deviceId', deviceId);
+            }
+            return deviceId;
+        }
+        
+        function setLoadingState(isLoading) {
+            loginButton.disabled = isLoading;
+            if (isLoading) {
+                loginButton.classList.add('loading');
+            } else {
+                loginButton.classList.remove('loading');
+            }
+        }
+        
+        function handleError(message) {
+            showToast(message);
+            setLoadingState(false);
+        }
+
+        // Login
+        function login() {
+            const accessKey = accessKeyInput.value.trim();
+            const deviceId = getDeviceId();
+            
+            setLoadingState(true);
+
+            if (!accessKey) {
+                handleError("Please enter access key");
+                return;
+            }
+            
+            keysRef.child(accessKey).once('value', snapshot => {
+                const keyData = snapshot.val();
+                
+                if (!keyData) {
+                    handleError("Error access key");
+                    return;
+                }
+                
+                if (keyData.deviceId && keyData.deviceId !== deviceId) {
+                    handleError("This key is already used on another device");
+                    return;
+                }
+                
+                if (keyData.expiresAt < Date.now()) {
+                    handleError("This key has expired");
+                    return;
+                }
+                
+                if (!keyData.isActive) {
+                    handleError("This key is deactivated");
+                    return;
+                }
+                
+                // All checks passed, update Firebase
+                keysRef.child(accessKey).update({
+                    used: true,
+                    deviceId: deviceId
+                }).then(() => {
+                    localStorage.setItem('userLoggedIn', 'true');
+                    localStorage.setItem('accessKey', accessKey);
+                    localStorage.setItem('expiresAt', keyData.expiresAt);
+                    window.location.href = "bytrox-prediction.html";
+                }).catch(err => {
+                    handleError("An error occurred. Please try again.");
+                });
+            }, error => {
+                handleError("Database connection error. Please check your network.");
+            });
+        }
+        
+        // Initialize particles.js
+        particlesJS('particles-js', {
+          "particles": {
+            "number": { "value": 80, "density": { "enable": true, "value_area": 800 }},
+            "color": { "value": "#ffffff" },
+            "shape": { "type": "circle" },
+            "opacity": { "value": 0.5, "random": true },
+            "size": { "value": 3, "random": true },
+            "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 },
+            "move": { "enable": true, "speed": 2, "direction": "none", "out_mode": "out" }
+          },
+          "interactivity": {
+            "detect_on": "canvas",
+            "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+            "modes": { "repulse": { "distance": 100 }, "push": { "particles_nb": 4 } }
+          },
+          "retina_detect": true
+        });
+    </script>
+</body>
+</html>
